@@ -74,11 +74,23 @@ namespace {
     {
         if(exists(id) == false) return true;
     
+		if(value1 == nullptr) return true;
+		if(value2 == nullptr) return true;
+    
         if(sets[id].count(value1) == 0) return true;
         if(sets[id].count(value2) == 0) return true;
     
         return false;
     }
+    
+    std::string repr(const char *word) {
+		if(word == nullptr) return "NULL";
+		else return word;
+	}
+	
+	std::string quote(std::string word) {
+		return "\"" + word + "\"";
+	}
 }
 
 unsigned long poset_new() {
@@ -114,6 +126,7 @@ size_t poset_size(unsigned long id) {
 
 bool poset_insert(unsigned long id, char const *value) {
     if(exists(id) == false) return false;
+    if(value == nullptr) return false;
     
     if(sets[id].count(value) > 0) return false;
     
@@ -123,6 +136,7 @@ bool poset_insert(unsigned long id, char const *value) {
 
 bool poset_remove(unsigned long id, char const *value) {
     if(exists(id) == false) return false;
+    if(value == nullptr) return false;
     
     if(sets[id].count(value) == 0) return false;
     
@@ -198,7 +212,7 @@ int main() {
     
     cout << "Added" << endl;
     
-    std::vector reached = reachable_from(a, settt);
+    std::vector<elem> reached = reachable_from(a, settt);
     cout << "Reachable: ";
     for(auto i = reached.begin(); i != reached.end(); i++) {
         cout << (*i) << ", ";
