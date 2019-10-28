@@ -74,9 +74,9 @@ namespace {
     {
         if(exists(id) == false) return true;
     
-		if(value1 == nullptr) return true;
-		if(value2 == nullptr) return true;
-    
+        if(value1 == nullptr) return true;
+        if(value2 == nullptr) return true;
+   
         if(sets[id].count(value1) == 0) return true;
         if(sets[id].count(value2) == 0) return true;
     
