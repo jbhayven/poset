@@ -84,13 +84,13 @@ namespace {
     }
     
     std::string repr(const char *word) {
-		if(word == nullptr) return "NULL";
-		else return word;
-	}
-	
-	std::string quote(std::string word) {
-		return "\"" + word + "\"";
-	}
+        if(word == nullptr) return "NULL";
+        else return word;
+    }
+    
+    std::string quote(std::string word) {
+        return "\"" + word + "\"";
+    }
 }
 
 unsigned long poset_new() {
