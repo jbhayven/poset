@@ -177,7 +177,7 @@ bool poset_test(unsigned long id, char const *value1, char const *value2) {
 }
 
 void poset_clear(unsigned long id) {
-    if(exists(id)) return;
+    if(exists(id) == false) return;
     
     sets[id].clear();
 }
