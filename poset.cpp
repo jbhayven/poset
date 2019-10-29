@@ -136,7 +136,7 @@ namespace jnp1 {
 	}
 
 	size_t poset_size(unsigned long id) {
-		if(exists(id)) return 0;
+		if(exists(id) == false) return 0;
 		
 		return set_elem_ids()[id].size();
 	}
@@ -171,12 +171,13 @@ namespace jnp1 {
         if(element2 == nullptr) return false;
         
         if(sets()[id][element1].count(element2) > 0) return false;
+        if(sets()[id][element2].count(element1) > 0) return false;
         
 		std::vector<elem> new_reachable = reachable_from (element2, sets()[id]);
 		std::vector<elem> new_reaching = reachable_from (element1, reverse(sets()[id]));
-		
+        
 		for(auto i = new_reaching.begin(); i != new_reaching.end(); i++)
-			for(auto j = new_reaching.begin(); j != new_reaching.end(); j++)
+			for(auto j = new_reachable.begin(); j != new_reachable.end(); j++)
 				sets()[id][*i].insert(*j);
 		
 		return true;
@@ -194,18 +195,17 @@ namespace jnp1 {
         if(sets()[id][element1].count(element2) == 0) return false;
 		
 		sets()[id][element1].erase(element2);
-		
-		std::vector<elem> now_unreachable = reachable_from (element2, sets()[id]);
-		std::vector<elem> now_unreaching = reachable_from (element1, reverse(sets()[id]));
-		
-		for(auto i = now_unreaching.begin(); i != now_unreaching.end(); i++) {
-			for(auto j = now_unreachable.begin(); j != now_unreachable.end(); j++) {
-				if(sets()[id][*i].count(*j) > 0) {
-					sets()[id][element1].insert(element2);
-					return false;
-				}
-			}
-		} 
+        
+        // testing whether element1 -> element2 shouldn't still exist 
+        // due to element1 still being transitively greater than element2
+        std::vector<elem> still_reachable = reachable_from (element1, sets()[id]);
+        
+        if(std::find(still_reachable.begin(), still_reachable.end(), element2) 
+                != still_reachable.end()) 
+        {
+            sets()[id][element1].insert(element2);
+            return false;
+        }
 		
 		return true;
 	}
@@ -231,8 +231,4 @@ namespace jnp1 {
 		sets()[id].clear();
         set_elem_ids()[id].clear();
 	}
-}
-
-int main() {    
-    return 0;
 }
