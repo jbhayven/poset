@@ -12,16 +12,16 @@ namespace {
     using poset = std::unordered_map<elem, greater>;
     
     std::vector<poset>& sets() {
-		static std::vector<poset> all_posets;
-		return all_posets;
-	} 
+        static std::vector<poset> all_posets;
+        return all_posets;
+    } 
     
     // ids previously occupied but freed
     // the ultimate structure type is yet to be decided 
     std::unordered_set<unsigned long>& freed_ids() {
-		static std::unordered_set<unsigned long> ids;
-		return ids;
-	}
+        static std::unordered_set<unsigned long> ids;
+        return ids;
+    }
     
     poset reverse(const poset& p) {
         poset reversed_poset;
@@ -96,108 +96,108 @@ namespace {
 }
 
 namespace jnp1 {
-	unsigned long poset_new() {
-		if(!freed_ids().empty()) {
-			unsigned long new_id = *freed_ids().begin();
-			freed_ids().erase(freed_ids().begin());
-			
-			return new_id;
-		}
-		
-		sets().push_back(poset());
-		
-		return sets().size() - 1;
-	}
+    unsigned long poset_new() {
+        if(!freed_ids().empty()) {
+            unsigned long new_id = *freed_ids().begin();
+            freed_ids().erase(freed_ids().begin());
+            
+            return new_id;
+        }
+        
+        sets().push_back(poset());
+        
+        return sets().size() - 1;
+    }
 
-	void poset_delete(unsigned long id) {
-		if(exists(id) == false) return;
-		
-		sets()[id].clear();
-		freed_ids().insert(id);
-		
-		while(*freed_ids().begin() == sets()[id].size() + 1) {
-			freed_ids().erase(freed_ids().begin());
-			sets().pop_back();
-		}
-	}
+    void poset_delete(unsigned long id) {
+        if(exists(id) == false) return;
+        
+        sets()[id].clear();
+        freed_ids().insert(id);
+        
+        while(*freed_ids().begin() == sets()[id].size() + 1) {
+            freed_ids().erase(freed_ids().begin());
+            sets().pop_back();
+        }
+    }
 
-	size_t poset_size(unsigned long id) {
-		if(exists(id)) return 0;
-		
-		return sets()[id].size();
-	}
+    size_t poset_size(unsigned long id) {
+        if(exists(id)) return 0;
+        
+        return sets()[id].size();
+    }
 
-	bool poset_insert(unsigned long id, char const *value) {
-		if(exists(id) == false) return false;
-		if(value == nullptr) return false;
-		
-		if(sets()[id].count(value) > 0) return false;
-		
-		sets()[id].insert(make_pair(value, greater()));
-		return true;
-	}
+    bool poset_insert(unsigned long id, char const *value) {
+        if(exists(id) == false) return false;
+        if(value == nullptr) return false;
+        
+        if(sets()[id].count(value) > 0) return false;
+        
+        sets()[id].insert(make_pair(value, greater()));
+        return true;
+    }
 
-	bool poset_remove(unsigned long id, char const *value) {
-		if(exists(id) == false) return false;
-		if(value == nullptr) return false;
-		
-		if(sets()[id].count(value) == 0) return false;
-		
-		sets()[id].erase(value);
-		return true;
-	}
+    bool poset_remove(unsigned long id, char const *value) {
+        if(exists(id) == false) return false;
+        if(value == nullptr) return false;
+        
+        if(sets()[id].count(value) == 0) return false;
+        
+        sets()[id].erase(value);
+        return true;
+    }
 
-	bool poset_add(unsigned long id, char const *value1, char const *value2) {
-		if(invalid_params(id, value1, value2)) return false;
-			
-		if(sets()[id][value1].count(value2) != 0) return false;
-		
-		std::vector<elem> new_reachable = reachable_from (value2, sets()[id]);
-		std::vector<elem> new_reaching = reachable_from (value1, reverse(sets()[id]));
-		
-		for(auto i = new_reaching.begin(); i != new_reaching.end(); i++)
-			for(auto j = new_reaching.begin(); j != new_reaching.end(); j++)
-				sets()[id][*i].insert(*j);
-		
-		return true;
-	}
+    bool poset_add(unsigned long id, char const *value1, char const *value2) {
+        if(invalid_params(id, value1, value2)) return false;
+            
+        if(sets()[id][value1].count(value2) != 0) return false;
+        
+        std::vector<elem> new_reachable = reachable_from (value2, sets()[id]);
+        std::vector<elem> new_reaching = reachable_from (value1, reverse(sets()[id]));
+        
+        for(auto i = new_reaching.begin(); i != new_reaching.end(); i++)
+            for(auto j = new_reaching.begin(); j != new_reaching.end(); j++)
+                sets()[id][*i].insert(*j);
+        
+        return true;
+    }
 
-	bool poset_del(unsigned long id, char const *value1, char const *value2) {
-		if(invalid_params(id, value1, value2)) return false;
-		
-		if(sets()[id][value1].count(value2) == 0) return false;
-		
-		sets()[id][value1].erase(value2);
-		
-		std::vector<elem> now_unreachable = reachable_from (value2, sets()[id]);
-		std::vector<elem> now_unreaching = reachable_from (value1, reverse(sets()[id]));
-		
-		for(auto i = now_unreaching.begin(); i != now_unreaching.end(); i++) {
-			for(auto j = now_unreachable.begin(); j != now_unreachable.end(); j++) {
-				if(sets()[id][*i].count(*j) > 0) {
-					sets()[id][value1].insert(value2);
-					return false;
-				}
-			}
-		} 
-		
-		return true;
-	}
+    bool poset_del(unsigned long id, char const *value1, char const *value2) {
+        if(invalid_params(id, value1, value2)) return false;
+        
+        if(sets()[id][value1].count(value2) == 0) return false;
+        
+        sets()[id][value1].erase(value2);
+        
+        std::vector<elem> now_unreachable = reachable_from (value2, sets()[id]);
+        std::vector<elem> now_unreaching = reachable_from (value1, reverse(sets()[id]));
+        
+        for(auto i = now_unreaching.begin(); i != now_unreaching.end(); i++) {
+            for(auto j = now_unreachable.begin(); j != now_unreachable.end(); j++) {
+                if(sets()[id][*i].count(*j) > 0) {
+                    sets()[id][value1].insert(value2);
+                    return false;
+                }
+            }
+        } 
+        
+        return true;
+    }
 
-	bool poset_test(unsigned long id, char const *value1, char const *value2) {
-		if(invalid_params(id, value1, value2)) return false;
-		
-		std::vector<elem> greater_than_value1 = reachable_from(value1, sets()[id]);
-		
-		return std::find(greater_than_value1.begin(), greater_than_value1.end(), 
-						 value2) != greater_than_value1.end();
-	}
+    bool poset_test(unsigned long id, char const *value1, char const *value2) {
+        if(invalid_params(id, value1, value2)) return false;
+        
+        std::vector<elem> greater_than_value1 = reachable_from(value1, sets()[id]);
+        
+        return std::find(greater_than_value1.begin(), greater_than_value1.end(), 
+                         value2) != greater_than_value1.end();
+    }
 
-	void poset_clear(unsigned long id) {
-		if(exists(id) == false) return;
-		
-		sets()[id].clear();
-	}
+    void poset_clear(unsigned long id) {
+        if(exists(id) == false) return;
+        
+        sets()[id].clear();
+    }
 }
 
 int main() {
