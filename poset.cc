@@ -191,7 +191,7 @@ namespace jnp1 {
         }
         
         set_elem_ids()[id].insert(value);
-        sets()[id][value].insert(value);
+        sets()[id][elem_of_value(value, id)].insert(elem_of_value(value, id));
         DEBUG("poset_insert: poset " + to_string(id) + 
                 ", element " + quote(repr(value)) + " inserted");
         return true;
