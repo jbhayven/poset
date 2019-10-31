@@ -27,21 +27,21 @@ namespace {
     using id_space = std::unordered_set<std::string>;
     
     std::vector<poset>& sets() {
-		static std::vector<poset> all_posets;
-		return all_posets;
-	} 
+        static std::vector<poset> all_posets;
+        return all_posets;
+    } 
     
     std::vector<id_space>& set_elem_ids() {
-		static std::vector<id_space> all_set_elem_ids;
-		return all_set_elem_ids;
-	} 
+        static std::vector<id_space> all_set_elem_ids;
+        return all_set_elem_ids;
+    } 
     
     // ids previously occupied but freed
     // the ultimate structure type is yet to be decided 
     std::unordered_set<unsigned long>& freed_ids() {
-		static std::unordered_set<unsigned long> ids;
-		return ids;
-	}
+        static std::unordered_set<unsigned long> ids;
+        return ids;
+    }
     
     poset reverse(const poset& p) {
         poset reversed_poset;
@@ -119,116 +119,117 @@ namespace {
 }
 
 namespace jnp1 {
-	unsigned long poset_new() {
-		DEBUG("poset_new()");
-		if(!freed_ids().empty()) {
-			unsigned long new_id = *freed_ids().begin();
-			freed_ids().erase(freed_ids().begin());
-			
-			DEBUG("poset_new: poset " + to_string(new_id) + " created");
-			return new_id;
-		}
-		
-		sets().push_back(poset());
-		set_elem_ids().push_back(id_space());
-		unsigned long new_id = (unsigned long)sets().size() - 1;
-		DEBUG("poset_new: poset " + to_string(new_id) + " created");
-		return new_id;
-	}
+    unsigned long poset_new() {
+        DEBUG("poset_new()");
+        if(!freed_ids().empty()) {
+            unsigned long new_id = *freed_ids().begin();
+            freed_ids().erase(freed_ids().begin());
+            
+            DEBUG("poset_new: poset " + to_string(new_id) + " created");
+            return new_id;
+        }
+        
+        sets().push_back(poset());
+        set_elem_ids().push_back(id_space());
+        unsigned long new_id = (unsigned long)sets().size() - 1;
+        DEBUG("poset_new: poset " + to_string(new_id) + " created");
+        return new_id;
+    }
 
-	void poset_delete(unsigned long id) {
-		DEBUG("poset_delete(" + to_string(id) + ")");
-		if(exists(id) == false) {
-			DEBUG("poset_delete: poset "+ to_string(id) + " does not exist");
-			return;	
-		}
-		
-		sets()[id].clear();
+    void poset_delete(unsigned long id) {
+        DEBUG("poset_delete(" + to_string(id) + ")");
+        if(exists(id) == false) {
+            DEBUG("poset_delete: poset "+ to_string(id) + " does not exist");
+            return; 
+        }
+        
+        sets()[id].clear();
         set_elem_ids()[id].clear();
         
-		freed_ids().insert(id);
-		
-		while(*freed_ids().begin() == sets()[id].size() + 1) {
-			freed_ids().erase(freed_ids().begin());
-			
+        freed_ids().insert(id);
+        
+        while(*freed_ids().begin() == sets()[id].size() + 1) {
+            freed_ids().erase(freed_ids().begin());
+            
             sets().pop_back();
             set_elem_ids().pop_back();
         }
         DEBUG("poset_delete: poset " + to_string(id) + " deleted");
-	}
+    }
 
-	size_t poset_size(unsigned long id) {
-		DEBUG("poset_size("+ to_string(id) + ")");
-		
-		if(exists(id) == false) {
-			DEBUG("poset_size: poset " + to_string(id) + " does not exist");
-			return 0;	
-		}
-		size_t size = set_elem_ids()[id].size();
-		
-		DEBUG("poset_size: poset " + to_string(id) + 
-				" contains " + to_string(size) + " element(s)");
-		return size;
-	}
+    size_t poset_size(unsigned long id) {
+        DEBUG("poset_size("+ to_string(id) + ")");
+        
+        if(exists(id) == false) {
+            DEBUG("poset_size: poset " + to_string(id) + " does not exist");
+            return 0;   
+        }
+        size_t size = set_elem_ids()[id].size();
+        
+        DEBUG("poset_size: poset " + to_string(id) + 
+                " contains " + to_string(size) + " element(s)");
+        return size;
+    }
 
-	bool poset_insert(unsigned long id, char const *value) {
-		DEBUG("poset_insert(" + to_string(id) + ", " + quote(repr(value)) + ")");
-		
-		if(exists(id) == false){
-			DEBUG("poset_insert: poset " + to_string(id) + "does not exist");
-			return false;
-		}
-		if(value == nullptr) {
-			DEBUG("poset_insert: invalid value (NULL)");
-			return false;
-		}
-		
-		if(set_elem_ids()[id].count(value) > 0)
-		{
-			DEBUG("poset_insert: poset " + to_string(id) + 
-					", element " + quote(repr(value)) +  " already exists");
-			return false;
-		}
-		
-		set_elem_ids()[id].insert(value);
-		DEBUG("poset_insert: poset " + to_string(id) + 
-				", element " + quote(repr(value)) + " inserted");
-		return true;
-	}
+    bool poset_insert(unsigned long id, char const *value) {
+        DEBUG("poset_insert(" + to_string(id) + ", " + quote(repr(value)) + ")");
+        
+        if(exists(id) == false){
+            DEBUG("poset_insert: poset " + to_string(id) + "does not exist");
+            return false;
+        }
+        if(value == nullptr) {
+            DEBUG("poset_insert: invalid value (NULL)");
+            return false;
+        }
+        
+        if(set_elem_ids()[id].count(value) > 0)
+        {
+            DEBUG("poset_insert: poset " + to_string(id) + 
+                    ", element " + quote(repr(value)) +  " already exists");
+            return false;
+        }
+        
+        set_elem_ids()[id].insert(value);
+        sets()[id][value].insert(value);
+        DEBUG("poset_insert: poset " + to_string(id) + 
+                ", element " + quote(repr(value)) + " inserted");
+        return true;
+    }
 
-	bool poset_remove(unsigned long id, char const *value) {
-		DEBUG("poset_remove(" + to_string(id) + ", " + quote(repr(value)) + ")");
-		
-		if(exists(id) == false){
-			DEBUG("poset_remove: poset " + to_string(id) + "does not exist");
-			return false;
-		}
-		if(value == nullptr) {
-			DEBUG("poset_remove: invalid value (NULL)");
-			return false;
-		}
-		if(set_elem_ids()[id].count(value) == 0){
-			DEBUG("poset_remove: poset " + to_string(id) + 
-					", element " + quote(repr(value)) + " does not exist");
-			return false;
-		}
-		
-		set_elem_ids()[id].erase(value);
-		DEBUG("poset_remove: poset " + to_string(id) + 
-				", element " + quote(repr(value)) + " removed");
-		return true;
-	}
+    bool poset_remove(unsigned long id, char const *value) {
+        DEBUG("poset_remove(" + to_string(id) + ", " + quote(repr(value)) + ")");
+        
+        if(exists(id) == false){
+            DEBUG("poset_remove: poset " + to_string(id) + "does not exist");
+            return false;
+        }
+        if(value == nullptr) {
+            DEBUG("poset_remove: invalid value (NULL)");
+            return false;
+        }
+        if(set_elem_ids()[id].count(value) == 0){
+            DEBUG("poset_remove: poset " + to_string(id) + 
+                    ", element " + quote(repr(value)) + " does not exist");
+            return false;
+        }
+        
+        set_elem_ids()[id].erase(value);
+        DEBUG("poset_remove: poset " + to_string(id) + 
+                ", element " + quote(repr(value)) + " removed");
+        return true;
+    }
 
-	bool poset_add(unsigned long id, char const *value1, char const *value2) {
-		DEBUG("poset_add(" + to_string(id) + ", " + 
-				quote(repr(value1)) + ", " + quote(repr(value2)) + ")");
-		
-		if(invalid_params(id, value1, value2)) {
-        	DEBUG("poset_add: poset " + to_string(id) + ", element " +
-					quote(repr(value1)) + " or " + 
+    bool poset_add(unsigned long id, char const *value1, char const *value2) {
+        DEBUG("poset_add(" + to_string(id) + ", " + 
+                quote(repr(value1)) + ", " + quote(repr(value2)) + ")");
+        
+        if(invalid_params(id, value1, value2)) {
+            DEBUG("poset_add: poset " + to_string(id) + ", element " +
+                    quote(repr(value1)) + " or " + 
                     quote(repr(value2)) + " does not exist");
-        	return false;
-		}
+            return false;
+        }
         
         elem element1 = elem_of_value(value1, id);
         elem element2 = elem_of_value(value2, id);
@@ -236,47 +237,47 @@ namespace jnp1 {
         if(sets()[id][element1].count(element2) > 0 || 
            sets()[id][element2].count(element1) > 0) 
         {
-        	DEBUG("poset_add: poset " + to_string(id) + ", relation (" + 
-					quote(repr(value1)) + ", " + 
+            DEBUG("poset_add: poset " + to_string(id) + ", relation (" + 
+                    quote(repr(value1)) + ", " + 
                     quote(repr(value2)) + ") cannot be added");
-        	return false;
-		}
+            return false;
+        }
         
-		std::vector<elem> new_reachable = reachable_from (element2, sets()[id]);
-		std::vector<elem> new_reaching = reachable_from (element1, reverse(sets()[id]));
+        std::vector<elem> new_reachable = reachable_from (element2, sets()[id]);
+        std::vector<elem> new_reaching = reachable_from (element1, reverse(sets()[id]));
         
-		for(auto i = new_reaching.begin(); i != new_reaching.end(); i++)
-			for(auto j = new_reachable.begin(); j != new_reachable.end(); j++)
-				sets()[id][*i].insert(*j);
+        for(auto i = new_reaching.begin(); i != new_reaching.end(); i++)
+            for(auto j = new_reachable.begin(); j != new_reachable.end(); j++)
+                sets()[id][*i].insert(*j);
                 
-		DEBUG("poset_add: poset " + to_string(id) + ", relation (" + 
-				quote(repr(value1)) + ", " + quote(repr(value2)) + ") added");
+        DEBUG("poset_add: poset " + to_string(id) + ", relation (" + 
+                quote(repr(value1)) + ", " + quote(repr(value2)) + ") added");
                 
-		return true;
-	}
+        return true;
+    }
 
-	bool poset_del(unsigned long id, char const *value1, char const *value2) {	
-		DEBUG("poset_del(" + to_string(id) + ", " + quote(repr(value1)) + 
-				", " + quote(repr(value2)) + ")");
+    bool poset_del(unsigned long id, char const *value1, char const *value2) {  
+        DEBUG("poset_del(" + to_string(id) + ", " + quote(repr(value1)) + 
+                ", " + quote(repr(value2)) + ")");
         
-		if(invalid_params(id, value1, value2)) {
-        	DEBUG("poset_del: poset " + to_string(id) + ", element " + 
+        if(invalid_params(id, value1, value2)) {
+            DEBUG("poset_del: poset " + to_string(id) + ", element " + 
                 quote(repr(value1)) + " or " + 
                 quote(repr(value2)) + " does not exist");
             return false;
-		}
+        }
         
         elem element1 = elem_of_value(value1, id);
         elem element2 = elem_of_value(value2, id);
-		
+        
         if(sets()[id][element1].count(element2) == 0){
-        	DEBUG("poset_del: poset " + to_string(id) + ", relation (" + 
-					quote(repr(value1)) + ", " + 
+            DEBUG("poset_del: poset " + to_string(id) + ", relation (" + 
+                    quote(repr(value1)) + ", " + 
                     quote(repr(value2)) + ") cannot be deleted");
-        	return false;
-		}
-		
-		sets()[id][element1].erase(element2);
+            return false;
+        }
+        
+        sets()[id][element1].erase(element2);
         
         // testing whether element1 -> element2 shouldn't still exist 
         // due to element1 still being transitively greater than element2
@@ -287,57 +288,57 @@ namespace jnp1 {
         {
             sets()[id][element1].insert(element2);
             DEBUG("poset_del: poset " + to_string(id) + ", relation (" + 
-					quote(repr(value1)) + ", " + 
+                    quote(repr(value1)) + ", " + 
                     quote(repr(value2)) + ") cannot be deleted");
             return false;
         }
         
-		DEBUG("poset_del: poset " + to_string(id) + ", relation (" + 
-				quote(repr(value1)) + ", " + quote(repr(value2)) + ") deleted");
+        DEBUG("poset_del: poset " + to_string(id) + ", relation (" + 
+                quote(repr(value1)) + ", " + quote(repr(value2)) + ") deleted");
                 
-		return true;
-	}
+        return true;
+    }
 
-	bool poset_test(unsigned long id, char const *value1, char const *value2) {
-		DEBUG("poset_test(" + to_string(id) + ", " + 
-				quote(repr(value1)) + ", " + quote(repr(value2)) + ")");
-		
-		if(invalid_params(id, value1, value2)) {
-        	DEBUG("poset_test poset " + to_string(id) + ", element " + 
+    bool poset_test(unsigned long id, char const *value1, char const *value2) {
+        DEBUG("poset_test(" + to_string(id) + ", " + 
+                quote(repr(value1)) + ", " + quote(repr(value2)) + ")");
+        
+        if(invalid_params(id, value1, value2)) {
+            DEBUG("poset_test poset " + to_string(id) + ", element " + 
                 quote(repr(value1)) + " or " + 
                 quote(repr(value2)) + " does not exist");
-        	return false;
-		}
-		
+            return false;
+        }
+        
         elem element1 = elem_of_value(value1, id);
         elem element2 = elem_of_value(value2, id);
         
-		std::vector<elem> greater_than_value1 = reachable_from(element1, sets()[id]);
-		bool result = std::find(greater_than_value1.begin(), 
+        std::vector<elem> greater_than_value1 = reachable_from(element1, sets()[id]);
+        bool result = std::find(greater_than_value1.begin(), 
                                 greater_than_value1.end(), 
                                 element2) != greater_than_value1.end();
-						 
-		if(result) {  
+                         
+        if(result) {  
             DEBUG("poset_test: poset " + to_string(id) + ", relation (" + 
-				quote(repr(value1)) + ", " + quote(repr(value2)) + ") exists");
-		}
+                quote(repr(value1)) + ", " + quote(repr(value2)) + ") exists");
+        }
         else {
             DEBUG("poset_test: poset " + to_string(id) + ", relation (" + 
-				quote(repr(value1)) + ", " + quote(repr(value2)) + ") does not exist");
-		}
+                quote(repr(value1)) + ", " + quote(repr(value2)) + ") does not exist");
+        }
         
-		return result;
-	}
+        return result;
+    }
 
-	void poset_clear(unsigned long id) {
-		DEBUG("poset_clear(" + to_string(id) + ")");
-		if(exists(id) == false){
-			DEBUG("poset_clear: poset " + to_string(id) + " does not exist");
-			return;
-		}
-		
-		sets()[id].clear();
+    void poset_clear(unsigned long id) {
+        DEBUG("poset_clear(" + to_string(id) + ")");
+        if(exists(id) == false){
+            DEBUG("poset_clear: poset " + to_string(id) + " does not exist");
+            return;
+        }
+        
+        sets()[id].clear();
         set_elem_ids()[id].clear();
         DEBUG("poset_clear: poset " + to_string(id) + " cleared");
-	}
+    }
 }
